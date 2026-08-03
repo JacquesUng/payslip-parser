@@ -1,0 +1,24 @@
+name: payslip-parser
+
+services:
+  payslip-api:
+    build:
+      context: ../payslip-api
+      target: development
+    volumes:
+      - ../payslip-api:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+
+  payslip-parser-ui:
+    build:
+      context: ../payslip-parser-ui
+      target: development
+    volumes:
+      - ../payslip-parser-ui:/app
+      - /app/node_modules
+    ports:
+      - "4200:4200"
+    depends_on:
+      - payslip-api
