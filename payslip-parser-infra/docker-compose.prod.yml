@@ -1,0 +1,22 @@
+name: payslip-parser
+
+services:
+  payslip-api:
+    build:
+      context: ../payslip-api
+      target: production
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  payslip-parser-ui:
+    build:
+      context: ../payslip-parser-ui
+      target: production
+    volumes:
+      - ../payslip-parser-infra/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - payslip-api
+    restart: unless-stopped

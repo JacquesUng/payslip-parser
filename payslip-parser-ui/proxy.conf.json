@@ -1,0 +1,7 @@
+{
+  "/payslip-api": {
+    "target": "http://payslip-api:3000",
+    "pathRewrite": { "^/payslip-api": "" },
+    "changeOrigin": true
+  }
+}
