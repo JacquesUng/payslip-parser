@@ -44,6 +44,9 @@ lerna-debug.log*
 .temp
 .tmp
 
+# local payslip storage (files + sqlite db)
+/storage
+
 # Runtime data
 pids
 *.pid
