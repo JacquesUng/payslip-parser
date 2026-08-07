@@ -8,6 +8,9 @@ services:
     volumes:
       - ../payslip-api:/app
       - /app/node_modules
+      - payslip-data:/app/storage
+    environment:
+      - STORAGE_ROOT=/app/storage
     ports:
       - "3000:3000"
 
@@ -22,3 +25,6 @@ services:
       - "4200:4200"
     depends_on:
       - payslip-api
+
+volumes:
+  payslip-data:

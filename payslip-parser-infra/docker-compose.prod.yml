@@ -5,6 +5,10 @@ services:
     build:
       context: ../payslip-api
       target: production
+    volumes:
+      - payslip-data:/app/storage
+    environment:
+      - STORAGE_ROOT=/app/storage
     ports:
       - "3000:3000"
     restart: unless-stopped
@@ -20,3 +24,6 @@ services:
     depends_on:
       - payslip-api
     restart: unless-stopped
+
+volumes:
+  payslip-data:
