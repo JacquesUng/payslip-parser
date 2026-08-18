@@ -46,4 +46,21 @@ describe('FileStorageService', () => {
 
     expect(readBack).toEqual(original);
   });
+
+  it('removes an existing file from disk', async () => {
+    const storedFileName = service.buildStoredFileName('payslip.pdf');
+    await service.write(storedFileName, Buffer.from('bye'));
+
+    await service.delete(storedFileName);
+
+    expect(existsSync(join(tempRoot, 'files', storedFileName))).toBe(false);
+  });
+
+  it('resolves without throwing when the file is already missing', async () => {
+    await expect(service.delete('does-not-exist.pdf')).resolves.toBeUndefined();
+  });
+
+  it('rejects a stored filename that attempts to escape the storage directory on delete', async () => {
+    await expect(service.delete('../evil.txt')).rejects.toThrow(/outside the storage directory/);
+  });
 });

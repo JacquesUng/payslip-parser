@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import storageConfig from '../config/storage.config';
 import { Payslip } from './entities/payslip.entity';
 import { FileStorageService } from './file-storage.service';
-import { CreatePayslipInput, ListPayslipsFilter } from './payslips.types';
+import { CreatePayslipInput, ListPayslipsFilter, UpdatePayslipInput } from './payslips.types';
 
 const MIN_YEAR = 1900;
 const MAX_YEAR = 2200;
@@ -59,6 +59,33 @@ export class PayslipsService {
       where: filter,
       order: { createdAt: 'ASC' },
     });
+  }
+
+  async update(id: string, changes: UpdatePayslipInput): Promise<Payslip | null> {
+    const payslip = await this.payslipRepository.findOneBy({ id });
+    if (!payslip) {
+      return null;
+    }
+
+    if (changes.company !== undefined) {
+      payslip.company = changes.company;
+    }
+    if (changes.orderIndex !== undefined) {
+      payslip.orderIndex = changes.orderIndex;
+    }
+
+    return this.payslipRepository.save(payslip);
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const payslip = await this.payslipRepository.findOneBy({ id });
+    if (!payslip) {
+      return false;
+    }
+
+    await this.fileStorage.delete(payslip.storedFileName);
+    await this.payslipRepository.delete(id);
+    return true;
   }
 
   private validateMonthAndYear(month: number, year: number): void {

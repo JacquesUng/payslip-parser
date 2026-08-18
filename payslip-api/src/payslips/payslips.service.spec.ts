@@ -128,4 +128,82 @@ describe('PayslipsService', () => {
     expect(results).toHaveLength(1);
     expect(results[0]?.id).toBe(a.id);
   });
+
+  describe('update', () => {
+    it('updates only company when orderIndex is omitted', async () => {
+      const created = await service.create(buildInput());
+
+      const updated = await service.update(created.id, { company: 'New Co' });
+
+      expect(updated?.company).toBe('New Co');
+      expect(updated?.orderIndex).toBe(created.orderIndex);
+    });
+
+    it('updates only orderIndex when company is omitted', async () => {
+      const created = await service.create(buildInput());
+
+      const updated = await service.update(created.id, { orderIndex: 7 });
+
+      expect(updated?.orderIndex).toBe(7);
+      expect(updated?.company).toBe(created.company);
+    });
+
+    it('updates both fields when both are provided', async () => {
+      const created = await service.create(buildInput());
+
+      const updated = await service.update(created.id, { company: 'New Co', orderIndex: 3 });
+
+      expect(updated?.company).toBe('New Co');
+      expect(updated?.orderIndex).toBe(3);
+    });
+
+    it('leaves unrelated fields untouched', async () => {
+      const created = await service.create(buildInput());
+
+      const updated = await service.update(created.id, { company: 'New Co' });
+
+      expect(updated?.month).toBe(created.month);
+      expect(updated?.year).toBe(created.year);
+      expect(updated?.storedFileName).toBe(created.storedFileName);
+    });
+
+    it('returns null for an unknown id', async () => {
+      const result = await service.update('00000000-0000-0000-0000-000000000000', {
+        company: 'New Co',
+      });
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('delete', () => {
+    it('removes the row and the underlying file', async () => {
+      const created = await service.create(buildInput());
+      const storedPath = join(tempRoot, 'files', created.storedFileName);
+      expect(existsSync(storedPath)).toBe(true);
+
+      const result = await service.delete(created.id);
+
+      expect(result).toBe(true);
+      expect(await service.findById(created.id)).toBeNull();
+      expect(existsSync(storedPath)).toBe(false);
+    });
+
+    it('returns false for an unknown id and does not throw', async () => {
+      const result = await service.delete('00000000-0000-0000-0000-000000000000');
+
+      expect(result).toBe(false);
+    });
+
+    it('still deletes the row when the file is already missing on disk', async () => {
+      const created = await service.create(buildInput());
+      const storedPath = join(tempRoot, 'files', created.storedFileName);
+      rmSync(storedPath);
+
+      const result = await service.delete(created.id);
+
+      expect(result).toBe(true);
+      expect(await service.findById(created.id)).toBeNull();
+    });
+  });
 });

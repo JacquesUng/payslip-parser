@@ -1,7 +1,7 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import storageConfig from '../config/storage.config';
 
@@ -9,6 +9,7 @@ const SAFE_EXTENSION_PATTERN = /^\.[a-zA-Z0-9]{1,10}$/;
 
 @Injectable()
 export class FileStorageService implements OnModuleInit {
+  private readonly logger = new Logger(FileStorageService.name);
   private readonly filesDir: string;
 
   constructor(
@@ -33,6 +34,18 @@ export class FileStorageService implements OnModuleInit {
 
   async read(storedFileName: string): Promise<Buffer> {
     return readFile(this.resolveStoredPath(storedFileName));
+  }
+
+  async delete(storedFileName: string): Promise<void> {
+    try {
+      await unlink(this.resolveStoredPath(storedFileName));
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+        this.logger.log(`File already missing, skipping delete: ${storedFileName}`);
+        return;
+      }
+      throw err;
+    }
   }
 
   private resolveStoredPath(storedFileName: string): string {
