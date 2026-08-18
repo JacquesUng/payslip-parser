@@ -1,0 +1,53 @@
+<div class="payslip-page">
+  <h1>Fiches de paie</h1>
+
+  <section class="upload">
+    <input type="file" (change)="onFileSelected($event)" />
+    <button type="button" (click)="upload()" [disabled]="!selectedFile">Envoyer</button>
+  </section>
+
+  @for (group of groups(); track group.year + '-' + group.month) {
+    <section class="group">
+      <h2>{{ group.month }}/{{ group.year }}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fichier</th>
+            <th>Entreprise</th>
+            <th>Ordre</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (payslip of group.payslips; track payslip.id) {
+            <tr>
+              <td>{{ payslip.originalFileName }}</td>
+              <td><input type="text" [value]="payslip.company" #companyInput /></td>
+              <td>
+                <input type="number" [value]="payslip.orderIndex" #orderIndexInput />
+                @if (payslip.hasOrderIndexCollision) {
+                  <span class="warning" title="Un autre bulletin du même mois utilise le même ordre">⚠</span>
+                }
+              </td>
+              <td>
+                <button
+                  type="button"
+                  (click)="saveEdit(payslip, companyInput.value, +orderIndexInput.value)"
+                >
+                  Enregistrer
+                </button>
+                <button type="button" (click)="remove(payslip)">Supprimer</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  }
+
+  <nav class="pagination">
+    <button type="button" (click)="previousPage()" [disabled]="page() <= 1">Précédent</button>
+    <span>Page {{ page() }} / {{ pageCount() }}</span>
+    <button type="button" (click)="nextPage()" [disabled]="page() >= pageCount()">Suivant</button>
+  </nav>
+</div>

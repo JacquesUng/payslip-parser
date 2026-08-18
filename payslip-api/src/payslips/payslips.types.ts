@@ -15,3 +15,8 @@ export interface ListPayslipsFilter {
   month?: number;
   year?: number;
 }
+
+export interface UpdatePayslipInput {
+  company?: string;
+  orderIndex?: number;
+}
