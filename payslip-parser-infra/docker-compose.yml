@@ -8,6 +8,7 @@ services:
     volumes:
       - ../payslip-api:/app
       - /app/node_modules
+      - /app/dist
       - payslip-data:/app/storage
     environment:
       - STORAGE_ROOT=/app/storage
