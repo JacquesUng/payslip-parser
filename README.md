@@ -36,17 +36,20 @@ docker compose down
 ```
 Add `-f docker-compose.prod.yml` when stopping the production stack. This
 keeps the `payslip-data` volume and, in development mode, the cached
-`node_modules` volumes intact.
+`node_modules` and `dist` volumes intact.
 
-## After changing dependencies (development mode)
+## After changing dependencies or seeing stale build errors (development mode)
 `docker-compose.yml` protects each service's `node_modules` from the host
-bind mount with an anonymous volume. Docker Compose reuses that volume
-across `up` runs instead of refreshing it from a rebuilt image, so after
-adding or updating a dependency in `payslip-api` or `payslip-parser-ui`,
-the running container can keep stale `node_modules` and fail at startup
-with an error like `Cannot find module '...'`, even though the image itself
-built successfully. Fix it without losing stored data by forcing the
-anonymous volumes to be recreated:
+bind mount with an anonymous volume, and does the same for `payslip-api`'s
+`dist` build output (which also holds TypeScript's incremental build
+cache). Docker Compose reuses these volumes across `up` runs instead of
+refreshing them from a rebuilt image, so after adding or updating a
+dependency in `payslip-api` or `payslip-parser-ui`, the running container
+can keep a stale `node_modules` and fail at startup with an error like
+`Cannot find module '...'`, even though the image itself built
+successfully. A stale `dist` build cache can similarly surface as
+`Cannot find module '/app/dist/main'`. Fix either without losing stored
+data by forcing the anonymous volumes to be recreated:
 ```
 docker compose up --build -V
 ```
