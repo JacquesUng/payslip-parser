@@ -13,6 +13,12 @@ services:
       - STORAGE_ROOT=/app/storage
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+      start_period: 40s
 
   payslip-parser-ui:
     build:
@@ -24,7 +30,8 @@ services:
     ports:
       - "4200:4200"
     depends_on:
-      - payslip-api
+      payslip-api:
+        condition: service_healthy
 
 volumes:
   payslip-data:

@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'node:path';
 import storageConfig from './config/storage.config';
 import { PayslipsModule } from './payslips/payslips.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PayslipsModule } from './payslips/payslips.module';
       }),
     }),
     PayslipsModule,
+    HealthModule,
   ],
 })
 export class AppModule {}
