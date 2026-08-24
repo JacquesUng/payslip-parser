@@ -27,6 +27,22 @@ describe('PayslipPage', () => {
 
   it('should create and fetch the payslip list on init', () => {
     expect(component).toBeTruthy();
+    const req = httpMock.expectOne((r) => r.url === '/payslip-api/payslips');
+    expect(req.request.params.has('userId')).toBe(false);
+    req.flush([]);
+  });
+
+  it('uploads a file without a userId field', () => {
+    httpMock.expectOne((r) => r.url === '/payslip-api/payslips').flush([]);
+
+    component.selectedFile = new File(['content'], 'payslip.pdf', { type: 'application/pdf' });
+    component.upload();
+
+    const req = httpMock.expectOne((r) => r.url === '/payslip-api/payslips' && r.method === 'POST');
+    const body = req.request.body as FormData;
+    expect(body.has('userId')).toBe(false);
+    req.flush({});
+
     httpMock.expectOne((r) => r.url === '/payslip-api/payslips').flush([]);
   });
 });

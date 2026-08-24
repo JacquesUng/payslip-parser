@@ -22,14 +22,14 @@ describe('PayslipApiService', () => {
   });
 
   it('lists payslips with only the provided filters as query params', () => {
-    service.list({ userId: 'user-1', month: 6 }).subscribe();
+    service.list({ month: 6 }).subscribe();
 
     const req = httpMock.expectOne(
       (r) => r.url === '/payslip-api/payslips' && r.method === 'GET',
     );
-    expect(req.request.params.get('userId')).toBe('user-1');
     expect(req.request.params.get('month')).toBe('6');
     expect(req.request.params.has('year')).toBe(false);
+    expect(req.request.params.has('userId')).toBe(false);
     req.flush([]);
   });
 
@@ -41,16 +41,16 @@ describe('PayslipApiService', () => {
     req.flush({});
   });
 
-  it('uploads a file as multipart form data with the userId field', () => {
+  it('uploads a file as multipart form data with no userId field', () => {
     const file = new File(['content'], 'payslip.pdf', { type: 'application/pdf' });
 
-    service.upload(file, 'user-1').subscribe();
+    service.upload(file).subscribe();
 
     const req = httpMock.expectOne('/payslip-api/payslips');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toBeInstanceOf(FormData);
     const body = req.request.body as FormData;
-    expect(body.get('userId')).toBe('user-1');
+    expect(body.has('userId')).toBe(false);
     expect(body.get('file')).toBe(file);
     req.flush({});
   });
