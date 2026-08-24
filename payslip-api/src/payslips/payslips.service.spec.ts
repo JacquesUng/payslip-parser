@@ -103,7 +103,7 @@ describe('PayslipsService', () => {
     expect(second.orderIndex).toBe(1);
     expect(third.orderIndex).toBe(2);
 
-    const reloadedFirst = await service.findById(first.id);
+    const reloadedFirst = await service.findById(first.id, 'user-1');
     expect(reloadedFirst?.orderIndex).toBe(0);
   });
 
@@ -115,7 +115,13 @@ describe('PayslipsService', () => {
   });
 
   it('findById returns null for an unknown id', async () => {
-    expect(await service.findById('00000000-0000-0000-0000-000000000000')).toBeNull();
+    expect(await service.findById('00000000-0000-0000-0000-000000000000', 'user-1')).toBeNull();
+  });
+
+  it('findById returns null when the payslip belongs to a different user', async () => {
+    const created = await service.create(buildInput({ userId: 'user-1' }));
+
+    expect(await service.findById(created.id, 'user-2')).toBeNull();
   });
 
   it('findAll filters by userId, month and year and orders by createdAt', async () => {
@@ -133,7 +139,7 @@ describe('PayslipsService', () => {
     it('updates only company when orderIndex is omitted', async () => {
       const created = await service.create(buildInput());
 
-      const updated = await service.update(created.id, { company: 'New Co' });
+      const updated = await service.update(created.id, 'user-1', { company: 'New Co' });
 
       expect(updated?.company).toBe('New Co');
       expect(updated?.orderIndex).toBe(created.orderIndex);
@@ -142,7 +148,7 @@ describe('PayslipsService', () => {
     it('updates only orderIndex when company is omitted', async () => {
       const created = await service.create(buildInput());
 
-      const updated = await service.update(created.id, { orderIndex: 7 });
+      const updated = await service.update(created.id, 'user-1', { orderIndex: 7 });
 
       expect(updated?.orderIndex).toBe(7);
       expect(updated?.company).toBe(created.company);
@@ -151,7 +157,10 @@ describe('PayslipsService', () => {
     it('updates both fields when both are provided', async () => {
       const created = await service.create(buildInput());
 
-      const updated = await service.update(created.id, { company: 'New Co', orderIndex: 3 });
+      const updated = await service.update(created.id, 'user-1', {
+        company: 'New Co',
+        orderIndex: 3,
+      });
 
       expect(updated?.company).toBe('New Co');
       expect(updated?.orderIndex).toBe(3);
@@ -160,7 +169,7 @@ describe('PayslipsService', () => {
     it('leaves unrelated fields untouched', async () => {
       const created = await service.create(buildInput());
 
-      const updated = await service.update(created.id, { company: 'New Co' });
+      const updated = await service.update(created.id, 'user-1', { company: 'New Co' });
 
       expect(updated?.month).toBe(created.month);
       expect(updated?.year).toBe(created.year);
@@ -168,9 +177,17 @@ describe('PayslipsService', () => {
     });
 
     it('returns null for an unknown id', async () => {
-      const result = await service.update('00000000-0000-0000-0000-000000000000', {
+      const result = await service.update('00000000-0000-0000-0000-000000000000', 'user-1', {
         company: 'New Co',
       });
+
+      expect(result).toBeNull();
+    });
+
+    it('returns null when the payslip belongs to a different user', async () => {
+      const created = await service.create(buildInput({ userId: 'user-1' }));
+
+      const result = await service.update(created.id, 'user-2', { company: 'New Co' });
 
       expect(result).toBeNull();
     });
@@ -182,17 +199,27 @@ describe('PayslipsService', () => {
       const storedPath = join(tempRoot, 'files', created.storedFileName);
       expect(existsSync(storedPath)).toBe(true);
 
-      const result = await service.delete(created.id);
+      const result = await service.delete(created.id, 'user-1');
 
       expect(result).toBe(true);
-      expect(await service.findById(created.id)).toBeNull();
+      expect(await service.findById(created.id, 'user-1')).toBeNull();
       expect(existsSync(storedPath)).toBe(false);
     });
 
     it('returns false for an unknown id and does not throw', async () => {
-      const result = await service.delete('00000000-0000-0000-0000-000000000000');
+      const result = await service.delete('00000000-0000-0000-0000-000000000000', 'user-1');
 
       expect(result).toBe(false);
+    });
+
+    it('returns false and does not remove the file when the payslip belongs to a different user', async () => {
+      const created = await service.create(buildInput({ userId: 'user-1' }));
+      const storedPath = join(tempRoot, 'files', created.storedFileName);
+
+      const result = await service.delete(created.id, 'user-2');
+
+      expect(result).toBe(false);
+      expect(existsSync(storedPath)).toBe(true);
     });
 
     it('still deletes the row when the file is already missing on disk', async () => {
@@ -200,10 +227,10 @@ describe('PayslipsService', () => {
       const storedPath = join(tempRoot, 'files', created.storedFileName);
       rmSync(storedPath);
 
-      const result = await service.delete(created.id);
+      const result = await service.delete(created.id, 'user-1');
 
       expect(result).toBe(true);
-      expect(await service.findById(created.id)).toBeNull();
+      expect(await service.findById(created.id, 'user-1')).toBeNull();
     });
   });
 });

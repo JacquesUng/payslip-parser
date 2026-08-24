@@ -9,6 +9,9 @@ services:
       - payslip-data:/app/storage
     environment:
       - STORAGE_ROOT=/app/storage
+      # JWT_SECRET must be provided at deploy time (shell env or a .env file next to this
+      # compose file) — never commit a real secret here.
+      - JWT_SECRET=${JWT_SECRET}
     ports:
       - "3000:3000"
     healthcheck:

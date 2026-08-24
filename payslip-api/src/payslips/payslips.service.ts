@@ -50,8 +50,8 @@ export class PayslipsService {
     return this.payslipRepository.save(payslip);
   }
 
-  async findById(id: string): Promise<Payslip | null> {
-    return this.payslipRepository.findOneBy({ id });
+  async findById(id: string, userId: string): Promise<Payslip | null> {
+    return this.payslipRepository.findOneBy({ id, userId });
   }
 
   async findAll(filter: ListPayslipsFilter = {}): Promise<Payslip[]> {
@@ -61,8 +61,8 @@ export class PayslipsService {
     });
   }
 
-  async update(id: string, changes: UpdatePayslipInput): Promise<Payslip | null> {
-    const payslip = await this.payslipRepository.findOneBy({ id });
+  async update(id: string, userId: string, changes: UpdatePayslipInput): Promise<Payslip | null> {
+    const payslip = await this.payslipRepository.findOneBy({ id, userId });
     if (!payslip) {
       return null;
     }
@@ -77,8 +77,8 @@ export class PayslipsService {
     return this.payslipRepository.save(payslip);
   }
 
-  async delete(id: string): Promise<boolean> {
-    const payslip = await this.payslipRepository.findOneBy({ id });
+  async delete(id: string, userId: string): Promise<boolean> {
+    const payslip = await this.payslipRepository.findOneBy({ id, userId });
     if (!payslip) {
       return false;
     }

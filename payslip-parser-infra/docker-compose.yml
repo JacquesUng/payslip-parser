@@ -12,6 +12,7 @@ services:
       - payslip-data:/app/storage
     environment:
       - STORAGE_ROOT=/app/storage
+      - JWT_SECRET=dev-only-insecure-secret-change-me
     ports:
       - "3000:3000"
     healthcheck:

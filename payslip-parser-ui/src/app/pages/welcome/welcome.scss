@@ -19,3 +19,30 @@
   font-size: 1rem;
   cursor: pointer;
 }
+
+.auth-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.auth-toggle button.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 20rem;
+}
+
+.auth-form input {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.error {
+  color: #b00020;
+}

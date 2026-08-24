@@ -1,4 +1,46 @@
 <div class="welcome">
   <p>Welcome to your payslip assistant. If there is anything you do not understand about your payslips, you're at the right place.</p>
-  <button type="button" (click)="start()">Start</button>
+
+  <div class="auth-toggle">
+    <button type="button" [class.active]="mode() === 'login'" (click)="mode() !== 'login' && toggleMode()">
+      Se connecter
+    </button>
+    <button type="button" [class.active]="mode() === 'signup'" (click)="mode() !== 'signup' && toggleMode()">
+      Créer un compte
+    </button>
+  </div>
+
+  @if (mode() === 'login') {
+    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+      <input type="email" formControlName="email" placeholder="Email" autocomplete="email" />
+      <input
+        type="password"
+        formControlName="password"
+        placeholder="Mot de passe"
+        autocomplete="current-password"
+      />
+      <button type="submit" [disabled]="loginForm.invalid || submitting()">Se connecter</button>
+    </form>
+  } @else {
+    <form class="auth-form" [formGroup]="signupForm" (ngSubmit)="submitSignup()">
+      <input type="email" formControlName="email" placeholder="Email" autocomplete="email" />
+      <input
+        type="password"
+        formControlName="password"
+        placeholder="Mot de passe (8 caractères minimum)"
+        autocomplete="new-password"
+      />
+      <input
+        type="password"
+        formControlName="confirmPassword"
+        placeholder="Confirmer le mot de passe"
+        autocomplete="new-password"
+      />
+      <button type="submit" [disabled]="signupForm.invalid || submitting()">Créer un compte</button>
+    </form>
+  }
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
 </div>

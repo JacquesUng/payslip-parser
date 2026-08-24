@@ -1,5 +1,4 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
-import { PLACEHOLDER_USER_ID } from '../../core/user.constant';
 import { Payslip, PayslipApiService } from '../../services/payslip-api.service';
 import { groupByMonthYear } from './payslip-grouping';
 
@@ -31,7 +30,7 @@ export class PayslipPage implements OnInit {
   }
 
   refresh(): void {
-    this.api.list({ userId: PLACEHOLDER_USER_ID }).subscribe((payslips) => this.payslips.set(payslips));
+    this.api.list({}).subscribe((payslips) => this.payslips.set(payslips));
   }
 
   onFileSelected(event: Event): void {
@@ -43,7 +42,7 @@ export class PayslipPage implements OnInit {
     if (!this.selectedFile) {
       return;
     }
-    this.api.upload(this.selectedFile, PLACEHOLDER_USER_ID).subscribe(() => {
+    this.api.upload(this.selectedFile).subscribe(() => {
       this.selectedFile = null;
       this.refresh();
     });

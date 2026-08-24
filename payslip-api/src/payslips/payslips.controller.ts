@@ -12,10 +12,13 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreatePayslipDto } from './dto/create-payslip.dto';
+import { JwtAuthGuard } from '../auth/auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 import { ListPayslipsQueryDto } from './dto/list-payslips-query.dto';
 import { PayslipResponseDto, toPayslipResponseDto } from './dto/payslip-response.dto';
 import { UpdatePayslipDto } from './dto/update-payslip.dto';
@@ -30,13 +33,14 @@ const UPLOAD_PLACEHOLDERS = {
 };
 
 @Controller('payslips')
+@UseGuards(JwtAuthGuard)
 export class PayslipsController {
   constructor(private readonly payslipsService: PayslipsService) {}
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(
-    @Body() dto: CreatePayslipDto,
+    @CurrentUser() user: AuthenticatedUser,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<PayslipResponseDto> {
     if (!file) {
@@ -44,7 +48,7 @@ export class PayslipsController {
     }
 
     const payslip = await this.payslipsService.create({
-      userId: dto.userId,
+      userId: user.id,
       company: UPLOAD_PLACEHOLDERS.company,
       month: UPLOAD_PLACEHOLDERS.month,
       year: UPLOAD_PLACEHOLDERS.year,
@@ -59,14 +63,14 @@ export class PayslipsController {
   }
 
   @Get()
-  async findAll(@Query() query: ListPayslipsQueryDto): Promise<PayslipResponseDto[]> {
+  async findAll(
+    @Query() query: ListPayslipsQueryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PayslipResponseDto[]> {
     // The ValidationPipe instantiates ListPayslipsQueryDto with every field present
     // (explicitly `undefined` when omitted), but TypeORM's `where` rejects explicit
     // undefined values — so only forward the filters that were actually provided.
-    const filter: ListPayslipsFilter = {};
-    if (query.userId !== undefined) {
-      filter.userId = query.userId;
-    }
+    const filter: ListPayslipsFilter = { userId: user.id };
     if (query.month !== undefined) {
       filter.month = query.month;
     }
@@ -79,8 +83,11 @@ export class PayslipsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<PayslipResponseDto> {
-    const payslip = await this.payslipsService.findById(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PayslipResponseDto> {
+    const payslip = await this.payslipsService.findById(id, user.id);
     if (!payslip) {
       throw new NotFoundException(`Payslip ${id} not found`);
     }
@@ -91,8 +98,9 @@ export class PayslipsController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdatePayslipDto,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<PayslipResponseDto> {
-    const payslip = await this.payslipsService.update(id, dto);
+    const payslip = await this.payslipsService.update(id, user.id, dto);
     if (!payslip) {
       throw new NotFoundException(`Payslip ${id} not found`);
     }
@@ -101,8 +109,8 @@ export class PayslipsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string): Promise<void> {
-    const deleted = await this.payslipsService.delete(id);
+  async remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<void> {
+    const deleted = await this.payslipsService.delete(id, user.id);
     if (!deleted) {
       throw new NotFoundException(`Payslip ${id} not found`);
     }

@@ -1,11 +1,7 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional } from 'class-validator';
 
 export class ListPayslipsQueryDto {
-  @IsOptional()
-  @IsString()
-  userId?: string;
-
   @IsOptional()
   @Type(() => Number)
   @IsInt()

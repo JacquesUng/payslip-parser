@@ -15,7 +15,6 @@ export interface Payslip {
 }
 
 export interface ListPayslipsParams {
-  userId?: string;
   month?: number;
   year?: number;
 }
@@ -33,9 +32,6 @@ export class PayslipApiService {
 
   list(params: ListPayslipsParams): Observable<Payslip[]> {
     const query: Record<string, string> = {};
-    if (params.userId !== undefined) {
-      query['userId'] = params.userId;
-    }
     if (params.month !== undefined) {
       query['month'] = String(params.month);
     }
@@ -49,9 +45,8 @@ export class PayslipApiService {
     return this.http.get<Payslip>(`${BASE_URL}/${id}`);
   }
 
-  upload(file: File, userId: string): Observable<Payslip> {
+  upload(file: File): Observable<Payslip> {
     const formData = new FormData();
-    formData.append('userId', userId);
     formData.append('file', file);
     return this.http.post<Payslip>(BASE_URL, formData);
   }
