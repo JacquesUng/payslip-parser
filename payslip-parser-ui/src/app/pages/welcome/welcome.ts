@@ -11,6 +11,6 @@ export class Welcome {
   constructor(private router: Router) {}
 
   start(): void {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/payslip']);
   }
 }
