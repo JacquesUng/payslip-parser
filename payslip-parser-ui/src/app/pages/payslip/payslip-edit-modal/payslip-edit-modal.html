@@ -1,0 +1,39 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h2>Modifier la fiche de paie</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Entreprise
+        <input type="text" formControlName="company" />
+      </label>
+
+      <fieldset class="order-section">
+        <legend>Ordre d'affichage ({{ payslip().month }}/{{ payslip().year }})</legend>
+
+        @if (loading()) {
+          <p>Chargement…</p>
+        } @else {
+          <ol>
+            @for (item of monthPayslips(); track item.id; let i = $index; let last = $last) {
+              <li [class.current]="item.id === payslip().id">
+                <span>{{ item.company }} — {{ item.originalFileName }}</span>
+                <button type="button" (click)="moveUp(i)" [disabled]="i === 0">↑</button>
+                <button type="button" (click)="moveDown(i)" [disabled]="last">↓</button>
+              </li>
+            }
+          </ol>
+        }
+      </fieldset>
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <div class="actions">
+        <button type="button" (click)="cancel()">Annuler</button>
+        <button type="submit" [disabled]="form.invalid || submitting() || loading()">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>

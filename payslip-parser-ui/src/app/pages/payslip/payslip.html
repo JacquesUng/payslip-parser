@@ -22,20 +22,15 @@
           @for (payslip of group.payslips; track payslip.id) {
             <tr>
               <td>{{ payslip.originalFileName }}</td>
-              <td><input type="text" [value]="payslip.company" #companyInput /></td>
+              <td>{{ payslip.company }}</td>
               <td>
-                <input type="number" [value]="payslip.orderIndex" #orderIndexInput />
+                {{ payslip.orderIndex }}
                 @if (payslip.hasOrderIndexCollision) {
                   <span class="warning" title="Un autre bulletin du même mois utilise le même ordre">⚠</span>
                 }
               </td>
               <td>
-                <button
-                  type="button"
-                  (click)="saveEdit(payslip, companyInput.value, +orderIndexInput.value)"
-                >
-                  Enregistrer
-                </button>
+                <button type="button" (click)="openEdit(payslip)">Modifier</button>
                 <button type="button" (click)="remove(payslip)">Supprimer</button>
               </td>
             </tr>
@@ -43,6 +38,10 @@
         </tbody>
       </table>
     </section>
+  }
+
+  @if (editingPayslip(); as p) {
+    <app-payslip-edit-modal [payslip]="p" (closed)="closeEdit()" (saved)="onSaved()" />
   }
 
   <nav class="pagination">

@@ -1,12 +1,13 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { Payslip, PayslipApiService } from '../../services/payslip-api.service';
 import { groupByMonthYear } from './payslip-grouping';
+import { PayslipEditModal } from './payslip-edit-modal/payslip-edit-modal';
 
 const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-payslip',
-  imports: [],
+  imports: [PayslipEditModal],
   templateUrl: './payslip.html',
   styleUrl: './payslip.scss',
 })
@@ -14,6 +15,7 @@ export class PayslipPage implements OnInit {
   payslips = signal<Payslip[]>([]);
   page = signal(1);
   selectedFile: File | null = null;
+  editingPayslip = signal<Payslip | null>(null);
 
   pageCount = computed(() => Math.max(1, Math.ceil(this.payslips().length / PAGE_SIZE)));
 
@@ -48,8 +50,17 @@ export class PayslipPage implements OnInit {
     });
   }
 
-  saveEdit(payslip: Payslip, company: string, orderIndex: number): void {
-    this.api.update(payslip.id, { company, orderIndex }).subscribe(() => this.refresh());
+  openEdit(payslip: Payslip): void {
+    this.editingPayslip.set(payslip);
+  }
+
+  closeEdit(): void {
+    this.editingPayslip.set(null);
+  }
+
+  onSaved(): void {
+    this.editingPayslip.set(null);
+    this.refresh();
   }
 
   remove(payslip: Payslip): void {
