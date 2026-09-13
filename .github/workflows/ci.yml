@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: payslip-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: payslip-api/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+
+  api-unit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: payslip-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: payslip-api/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  api-e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: payslip-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: payslip-api/package-lock.json
+      - run: npm ci
+      - run: npm run test:e2e
+
+  ui-test-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: payslip-parser-ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: payslip-parser-ui/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
